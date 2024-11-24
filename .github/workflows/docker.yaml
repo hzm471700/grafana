@@ -1,0 +1,30 @@
+name: Docker Build and Push to Aliyun
+
+on:
+  push:
+    branches:
+      - main  # 在 main 分支推送时触发
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. 登录阿里云容器镜像服务
+      - name: Log in to Aliyun Container Registry
+        run: |
+          echo "${{ secrets.ALIYUN_PASSWORD }}" | docker login --username "${{ secrets.ALIYUN_USERNAME }}" registry.cn-hangzhou.aliyuncs.com --password-stdin
+
+      # 3. 构建 Docker 镜像
+      - name: Build Docker image
+        run: |
+          docker build -t registry.cn-hangzhou.aliyuncs.com/${{ secrets.ALIYUN_NAMESPACE }}/grafana:latest .
+
+      # 4. 推送镜像到阿里云
+      - name: Push Docker image to Aliyun
+        run: |
+          docker push registry.cn-hangzhou.aliyuncs.com/${{ secrets.ALIYUN_NAMESPACE }}/grafana:latest
